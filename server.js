@@ -1,3 +1,7 @@
+	require('dotenv').config();
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+
 const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
@@ -34,4 +38,14 @@ app.post('/tweets/:id/like', (req, res) => {
 const PORT = 5000;
 app.listen(PORT, () => {
     console.log(`Server running on http://localhost:${PORT}`);
+	const cors = require('cors');
+
+app.use(cors({
+  origin: 'https://cosmic-mandazi-845855.netlify.app', // Replace with your real Netlify URL
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  credentials: true
+}));
+
+
+
 });
