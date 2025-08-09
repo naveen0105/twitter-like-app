@@ -1,30 +1,34 @@
-require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
+const bodyParser = require('body-parser');
 
 const app = express();
 
 app.use(cors({
-  origin: ['http://localhost:3000', 'https://689750ddf8ae570be6a92062--cosmic-mandazi-845855.netlify.app'], // add your Netlify URL here
-  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  origin: ['https://689750ddf8ae570be6a92062--cosmic-mandazi-845855.netlify.app'],
+  methods: ['GET', 'POST'],
   credentials: true
 }));
 
-app.use(express.json());
+app.use(bodyParser.json());
 
-// Example test route
-app.get('/', (req, res) => {
-  res.send('Backend is running!');
+let tweets = [];
+
+app.get('/tweets', (req, res) => {
+  res.json(tweets);
 });
 
-// Connect to MongoDB (example)
-const mongoose = require('mongoose');
-mongoose.connect(process.env.MONGODB_URI)
-  .then(() => console.log('MongoDB connected'))
-  .catch(err => console.error(err));
+app.post('/tweets', (req, res) => {
+  const { text } = req.body;
+  if (!text) {
+    return res.status(400).json({ error: 'Tweet text is required' });
+  }
+  const newTweet = { id: tweets.length + 1, text, createdAt: new Date() };
+  tweets.unshift(newTweet);
+  res.status(201).json(newTweet);
+});
 
-// Use Render's PORT or default to 5000 locally
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 10000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
