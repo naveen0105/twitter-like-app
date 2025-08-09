@@ -6,8 +6,9 @@ const mongoose = require('mongoose');
 const app = express();
 
 app.use(cors({
-  origin: 'https://689750ddf8ae570be6a92062--cosmic-mandazi-845855.netlify.app'
+    origin: 'https://cosmic-mandazi-845855.netlify.app'
 }));
+
 app.use(express.json());
 
 mongoose.connect(process.env.MONGODB_URI, {
