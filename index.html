@@ -3,39 +3,232 @@
 <head>
   <title>Twitter-Like App</title>
   <style>
-    body { font-family: Arial; max-width: 500px; margin: auto; }
-    #tweets { margin-top: 20px; }
-    .tweet { padding: 10px; border-bottom: 1px solid #ccc; }
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
+
+    body {
+      font-family: 'Poppins', Arial, sans-serif;
+      max-width: 600px;
+      margin: 40px auto;
+      background: linear-gradient(135deg, #6a11cb, #2575fc);
+      color: #fff;
+      padding: 20px;
+      border-radius: 16px;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    h1 {
+      font-size: 3rem;
+      font-weight: 600;
+      text-align: center;
+      margin-bottom: 30px;
+      text-shadow: 0 0 8px rgba(255,255,255,0.7);
+    }
+
+    #tweetInput {
+      width: 100%;
+      font-size: 1.4rem;
+      padding: 14px 16px;
+      border-radius: 12px;
+      border: none;
+      resize: none;
+      box-shadow: 0 0 15px rgba(255, 255, 255, 0.3);
+      outline: none;
+      margin-bottom: 15px;
+      font-weight: 500;
+      background: rgba(255,255,255,0.1);
+      color: #fff;
+    }
+
+    #tweetBtn {
+      display: block;
+      width: 100%;
+      background: #ff4081;
+      border: none;
+      padding: 16px;
+      font-size: 1.6rem;
+      font-weight: 600;
+      border-radius: 14px;
+      color: white;
+      cursor: pointer;
+      box-shadow: 0 5px 15px rgba(255,64,129,0.6);
+      transition: background 0.3s ease;
+      user-select: none;
+    }
+
+    #tweetBtn:hover {
+      background: #e73370;
+    }
+
+    #tweetsSection {
+      background: rgba(255, 255, 255, 0.15);
+      border-radius: 20px;
+      padding: 20px;
+      margin-top: 40px;
+      min-height: 200px;
+      box-shadow: inset 0 0 15px rgba(255,255,255,0.3);
+    }
+
+    #tweetsSection h2 {
+      font-size: 2rem;
+      margin-bottom: 20px;
+      text-align: center;
+      font-weight: 600;
+      text-shadow: 0 0 6px rgba(0,0,0,0.2);
+    }
+
+    .tweet {
+      background: rgba(255,255,255,0.25);
+      border-radius: 14px;
+      padding: 16px 20px;
+      margin-bottom: 15px;
+      font-size: 1.3rem;
+      font-weight: 500;
+      box-shadow: 0 3px 8px rgba(0,0,0,0.2);
+      position: relative;
+      color: #111;
+      word-wrap: break-word;
+    }
+
+    /* Confetti and balloons container */
+    #confettiContainer {
+      pointer-events: none;
+      position: fixed;
+      top: 0; left: 0; width: 100vw; height: 100vh;
+      overflow: visible;
+      z-index: 9999;
+      mix-blend-mode: screen;
+    }
+
+    /* Ribbon style */
+    .ribbon {
+      position: absolute;
+      width: 12px;
+      height: 36px;
+      background: linear-gradient(45deg, #ff4081, #f50057);
+      opacity: 0.9;
+      border-radius: 3px;
+      animation: ribbonFall 3s forwards ease-in;
+    }
+
+    @keyframes ribbonFall {
+      0% {
+        transform: translateY(0) rotate(0deg);
+        opacity: 1;
+      }
+      100% {
+        transform: translateY(100vh) rotate(360deg);
+        opacity: 0;
+      }
+    }
+
+    /* Balloon style */
+    .balloon {
+      position: absolute;
+      width: 40px;
+      height: 60px;
+      background: radial-gradient(circle at 20% 20%, #ff4081, #c51162);
+      border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+      opacity: 0.85;
+      animation: balloonRise 4s forwards ease-out;
+      box-shadow: inset -6px -10px 10px rgba(255,255,255,0.4);
+    }
+
+    @keyframes balloonRise {
+      0% {
+        transform: translateY(0) scale(1);
+        opacity: 1;
+      }
+      100% {
+        transform: translateY(-120vh) scale(1.2);
+        opacity: 0;
+      }
+    }
   </style>
 </head>
 <body>
   <h1>Mini Twitter</h1>
-  <textarea id="tweetInput" placeholder="What's happening?" rows="3" style="width:100%;"></textarea>
+  <textarea id="tweetInput" placeholder="What's happening?" rows="3"></textarea>
   <button id="tweetBtn">Tweet</button>
 
-  <div id="tweets"></div>
+  <div id="tweetsSection">
+    <h2>Tweets</h2>
+    <div id="tweets"></div>
+  </div>
+
+  <div id="confettiContainer"></div>
 
   <script>
     const API_URL = 'https://twitter-like-app-m800.onrender.com';
 
     async function fetchTweets() {
-      const res = await fetch(`${API_URL}/tweets`);
-      const data = await res.json();
-      document.getElementById('tweets').innerHTML = data
-        .map(t => `<div class="tweet">${t.content}</div>`)
-        .join('');
+      try {
+        const res = await fetch(`${API_URL}/tweets`);
+        const data = await res.json();
+        document.getElementById('tweets').innerHTML = data
+          .map(t => `<div class="tweet">${escapeHtml(t.content)}</div>`)
+          .join('');
+      } catch(e) {
+        console.error('Failed to fetch tweets:', e);
+      }
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    function createRibbon(x, y) {
+      const ribbon = document.createElement('div');
+      ribbon.classList.add('ribbon');
+      ribbon.style.left = x + 'px';
+      ribbon.style.top = y + 'px';
+      ribbon.style.animationDuration = 2000 + Math.random()*1000 + 'ms';
+      ribbon.style.transform = `rotate(${Math.random()*360}deg)`;
+      document.getElementById('confettiContainer').appendChild(ribbon);
+      setTimeout(() => ribbon.remove(), 3000);
+    }
+
+    function createBalloon(x, y) {
+      const balloon = document.createElement('div');
+      balloon.classList.add('balloon');
+      balloon.style.left = x + 'px';
+      balloon.style.top = y + 'px';
+      balloon.style.animationDuration = 3500 + Math.random()*1500 + 'ms';
+      document.getElementById('confettiContainer').appendChild(balloon);
+      setTimeout(() => balloon.remove(), 4000);
+    }
+
+    function triggerCelebration() {
+      const container = document.getElementById('confettiContainer');
+      const width = window.innerWidth;
+      const height = window.innerHeight;
+
+      for (let i = 0; i < 20; i++) {
+        createRibbon(Math.random() * width, Math.random() * height * 0.8);
+      }
+      for (let i = 0; i < 10; i++) {
+        createBalloon(Math.random() * width, height + 60);
+      }
     }
 
     document.getElementById('tweetBtn').addEventListener('click', async () => {
-      const content = document.getElementById('tweetInput').value;
-      if (!content.trim()) return;
-      await fetch(`${API_URL}/tweets`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ content })
-      });
-      document.getElementById('tweetInput').value = '';
-      fetchTweets();
+      const content = document.getElementById('tweetInput').value.trim();
+      if (!content) return;
+      try {
+        await fetch(`${API_URL}/tweets`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ content })
+        });
+        document.getElementById('tweetInput').value = '';
+        fetchTweets();
+        triggerCelebration();
+      } catch (e) {
+        console.error('Failed to post tweet:', e);
+      }
     });
 
     fetchTweets();
