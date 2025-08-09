@@ -1,19 +1,12 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Mini Twitter</title>
-  <style>
-    body { font-family: Arial, sans-serif; max-width: 500px; margin: auto; padding: 20px; }
-    #tweets { margin-top: 20px; }
-    .tweet { border-bottom: 1px solid #ccc; padding: 10px 0; }
-  </style>
+  <title>Twitter-like App</title>
 </head>
 <body>
   <h1>Mini Twitter</h1>
-  <textarea id="tweetInput" placeholder="What's happening?" rows="3" style="width:100%"></textarea>
-  <br><br>
-  <button id="tweetBtn">Tweet</button>
-
+  <textarea id="tweetContent" placeholder="What's happening?"></textarea><br>
+  <button id="tweetButton">Tweet</button>
   <div id="tweets"></div>
 
   <script>
@@ -21,22 +14,19 @@
 
     async function loadTweets() {
       const res = await fetch(`${API_URL}/tweets`);
-      const data = await res.json();
-      const tweetContainer = document.getElementById('tweets');
-      tweetContainer.innerHTML = data.map(t => `<div class="tweet">${t.text} <br><small>${new Date(t.createdAt).toLocaleString()}</small></div>`).join('');
+      const tweets = await res.json();
+      document.getElementById('tweets').innerHTML = tweets.map(t => `<p>${t.content}</p>`).join('');
     }
 
-    document.getElementById('tweetBtn').addEventListener('click', async () => {
-      const tweetInput = document.getElementById('tweetInput').value;
-      if (!tweetInput.trim()) return alert('Tweet cannot be empty');
-
+    document.getElementById('tweetButton').addEventListener('click', async () => {
+      const content = document.getElementById('tweetContent').value;
+      if (!content.trim()) return;
       await fetch(`${API_URL}/tweets`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: tweetInput })
+        body: JSON.stringify({ content })
       });
-
-      document.getElementById('tweetInput').value = '';
+      document.getElementById('tweetContent').value = '';
       loadTweets();
     });
 
