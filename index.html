@@ -1,36 +1,44 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Twitter-like App</title>
+  <title>Twitter-Like App</title>
+  <style>
+    body { font-family: Arial; max-width: 500px; margin: auto; }
+    #tweets { margin-top: 20px; }
+    .tweet { padding: 10px; border-bottom: 1px solid #ccc; }
+  </style>
 </head>
 <body>
   <h1>Mini Twitter</h1>
-  <textarea id="tweetContent" placeholder="What's happening?"></textarea><br>
-  <button id="tweetButton">Tweet</button>
+  <textarea id="tweetInput" placeholder="What's happening?" rows="3" style="width:100%;"></textarea>
+  <button id="tweetBtn">Tweet</button>
+
   <div id="tweets"></div>
 
   <script>
     const API_URL = 'https://twitter-like-app-m800.onrender.com';
 
-    async function loadTweets() {
+    async function fetchTweets() {
       const res = await fetch(`${API_URL}/tweets`);
-      const tweets = await res.json();
-      document.getElementById('tweets').innerHTML = tweets.map(t => `<p>${t.content}</p>`).join('');
+      const data = await res.json();
+      document.getElementById('tweets').innerHTML = data
+        .map(t => `<div class="tweet">${t.content}</div>`)
+        .join('');
     }
 
-    document.getElementById('tweetButton').addEventListener('click', async () => {
-      const content = document.getElementById('tweetContent').value;
+    document.getElementById('tweetBtn').addEventListener('click', async () => {
+      const content = document.getElementById('tweetInput').value;
       if (!content.trim()) return;
       await fetch(`${API_URL}/tweets`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ content })
       });
-      document.getElementById('tweetContent').value = '';
-      loadTweets();
+      document.getElementById('tweetInput').value = '';
+      fetchTweets();
     });
 
-    loadTweets();
+    fetchTweets();
   </script>
 </body>
 </html>
