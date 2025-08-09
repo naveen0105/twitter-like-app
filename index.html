@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mini Twitter</title>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        background: #f5f8fa;
+        display: flex;
+        justify-content: center;
+        padding: 20px;
+    }
+    .container {
+        background: white;
+        border: 1px solid #ccc;
+        border-radius: 10px;
+        width: 400px;
+        padding: 20px;
+    }
+    textarea {
+        width: 100%;
+        height: 60px;
+        resize: none;
+        padding: 10px;
+        font-size: 14px;
+    }
+    button {
+        background: #1da1f2;
+        color: white;
+        border: none;
+        padding: 8px 16px;
+        margin-top: 8px;
+        border-radius: 20px;
+        cursor: pointer;
+    }
+    .tweet {
+        background: #f0f8ff;
+        border-radius: 8px;
+        padding: 10px;
+        margin-top: 10px;
+    }
+    .like-btn {
+        color: #1da1f2;
+        cursor: pointer;
+        font-size: 14px;
+    }
+</style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Mini Twitter</h2>
+    <textarea id="tweetInput" placeholder="What's happening?"></textarea>
+    <button id="postBtn">Tweet</button>
+    <div id="feed"></div>
+</div>
+
+<script>
+const API_URL = 'http://localhost:5000';
+
+const tweetInput = document.getElementById('tweetInput');
+const postBtn = document.getElementById('postBtn');
+const feed = document.getElementById('feed');
+
+async function fetchTweets() {
+    const res = await fetch(`${API_URL}/tweets`);
+    const data = await res.json();
+    renderTweets(data);
+}
+
+function renderTweets(tweets) {
+    feed.innerHTML = '';
+    tweets.slice().reverse().forEach(tweet => {
+        const tweetDiv = document.createElement('div');
+        tweetDiv.className = 'tweet';
+        tweetDiv.innerHTML = `
+            <p>${tweet.text}</p>
+            <span class="like-btn" data-id="${tweet.id}">❤️ ${tweet.likes}</span>
+        `;
+        feed.appendChild(tweetDiv);
+    });
+
+    document.querySelectorAll('.like-btn').forEach(btn => {
+        btn.addEventListener('click', async () => {
+            const id = btn.getAttribute('data-id');
+            await fetch(`${API_URL}/tweets/${id}/like`, { method: 'POST' });
+            fetchTweets();
+        });
+    });
+}
+
+postBtn.addEventListener('click', async () => {
+    const text = tweetInput.value.trim();
+    if (text) {
+        await fetch(`${API_URL}/tweets`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text })
+        });
+        tweetInput.value = '';
+        fetchTweets();
+    }
+});
+
+fetchTweets();
+</script>
+
+
+</body>
+</html>
